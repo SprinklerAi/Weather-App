@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "../../../Projektityö"
+		},
+		{
+			"path": "../../../T4"
+		},
+		{
+			"name": "metoclient",
+			"path": "../../../T4/metoclient"
+		},
+		{
+			"name": "metoclient",
+			"path": "../../../metoclient"
+		},
+		{
+			"name": "metoclient-1",
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "metoclient"
+	}
+}
