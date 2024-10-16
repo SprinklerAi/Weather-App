@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+
   <link rel="stylesheet" href="../../dist/css/style.css" type="text/css">
   
   <script src="config.js"></script>
@@ -57,26 +59,27 @@
           <a class="nav-link active" aria-current="page" href="#">Home</a>
         </li>
         <li class="nav-item">
-          <select id="language-selector" onchange="changeLanguage(this.value)" class="form-select" style="margin: 20px; align-items: center; justify-content: center;">
+          <select id="language-selector" onchange="changeLanguage(this.value)" class="form-select" style="margin: 5px; align-items: center; justify-content: center; width: auto;">
             <option value="en">Eng</option>
             <option value="fi">Fin</option>
           </select>
         </li>
         <li class="nav-item">
-          <select id="unit-selector" onchange="changeUnits(this.value)" class="form-select" style="margin: 20px; align-items: center; justify-content: center;">
+          <select id="unit-selector" onchange="changeUnits(this.value)" class="form-select" style="margin: 5px; align-items: center; justify-content: center; width: auto;">
             <option value="metric">C°</option>
             <option value="imperial">F°</option>
             <option value="standard">K</option>
           </select>
         </li>
       </ul>
-      <form class="d-flex align-items-center ms-2" role="search" id="search-form" style="flex-shrink: 0;">
-        <input type="text" id="search-button" placeholder="Enter city" class="form-control" required style="max-width: 150px;">
+      <form class="d-flex align-items-center ms-2" role="search" id="search-form" style="flex-shrink: 0; margin-right: 10px; margin-left: 0px;">
+        <input type="text" id="search-button" placeholder="Enter city" class="form-control" required style="max-width: 150px; margin-left: 15px">
         <button type="submit" class="btn btn-outline-success ms-2">Search</button>
     </form>
-    
-      </form>
-        <button type="submit" class="btn btn-outline-success ms-1"  id="get-location-btn">Get Location</button>
+      <button type="submit" class="btn btn-outline-success ms-1" id="get-location-btn" data-bs-toggle="tooltip" data-bs-title="Your location">
+        <i class="bi bi-geo-alt-fill"></i>
+      </button>
+    </form>
     </div>
   </div>
 </nav>
@@ -84,19 +87,13 @@
       
     
 <div class="whole-weather-info" id="whole-weather-info" style="align-items: center; justify-content: center;">
-
   <div class="row align-items-center justify-content-center" id="city-colums" style="gap: 10px; max-width: 100%;"></div>
-
-  <div class="container text-center">
-    <div id="hourly-forecast">
-      <div class="container text-center">
+    <div id="hourly-forecast" style="margin: 20px;">
         <div class="row align-items-center justify-content-center" id="hourly-colums"></div>
-      </div>
     </div>
-  </div>
-
- 
-
+    <div id="daily-forecast">
+      <div class="row align-items-center justify-content-center" id="daily-colums"></div>
+    </div>
 </div>
 
 

@@ -7,24 +7,19 @@ let city
 let cities = []
 let lat  = ""
 let lon = ""
-
-
+const locationButton = document.getElementById("get-location-btn")
 
 document.addEventListener("DOMContentLoaded", async function () {
     console.log(city)
     await fetchDefaultWeather()
-
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
         new bootstrap.Tooltip(tooltipNode)
     })
 })
 
-
 document.getElementById("search-form").addEventListener("submit", async(event) => {
     event.preventDefault()
-
     city = document.getElementById("search-button").value.trim()
-
     if (city) {
         cities = [city]
         getWeather(cities)
@@ -35,9 +30,19 @@ document.getElementById("search-form").addEventListener("submit", async(event) =
 async function changeLanguage(lang) {
     selectedLanguage = lang
     await fetchWeatherData()
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-        new bootstrap.Tooltip(tooltipNode)
-    })
+
+    const locationButton = document.getElementById('get-location-btn');
+    const tooltipTitle = selectedLanguage === "en" ? "Your location" : "Sinun sijaintisi";
+
+    locationButton.setAttribute('data-bs-title', tooltipTitle);
+
+    const tooltip = bootstrap.Tooltip.getInstance(locationButton)
+    if (tooltip) {
+        tooltip.dispose()
+    }
+
+    new bootstrap.Tooltip(locationButton)
+
 }
 
 async function changeUnits(units) {
@@ -52,6 +57,7 @@ async function changeUnits(units) {
         default:
             unitsLetter = "C°"
     }     
+
     await fetchWeatherData()
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
         new bootstrap.Tooltip(tooltipNode)
@@ -83,7 +89,6 @@ async function getWeather(cities) {
 
     for (const city of cities) {
         const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&lang=${selectedLanguage}&units=${selectedUnits}`
-
         try {
             const weatherResponse = await fetch(currentWeatherUrl)
             const weatherData = await weatherResponse.json()
@@ -115,28 +120,34 @@ function displayWeatherData(weatherDataArray) {
         const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`
 
         const weatherHtml = `
-            <div class="col" style="text-align: center;">
-                <div class="weather-card">
+            <div class="col d-flex justify-content-center align-items-center" style="text-align: center;">
+                <div class="weather-card" style="max-width: 25vw;">
                     <h5 style="margin: 5px 0;">${cityName}</h5>
-                    <a href="#" class="d-inline-block" data-bs-toggle="tooltip" data-bs-title="${description}">
-                        <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto; margin-bottom: 10px;">
-                    </a>
-                    <p style="margin: 5px 0;">${temperature}${unitsLetter}</p>
+                    <div data-bs-toggle="tooltip" data-bs-title="${description}">
+                        <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto; margin: -50px;">
+                    </div>
+                    <p style="margin-top: 10px; margin-bottom: 30px;">${temperature}${unitsLetter}</p>
                 </div>
-            </div>`
-
+            </div>
+            `
         cityColumns.innerHTML += weatherHtml
+    })
+
+    if (cities.length === 1) {
+        fetchForecast()
+    }
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        tooltips.forEach(tooltipNode => {
+            const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
+            if (tooltip) {
+                tooltip.dispose()
+            }
     })
 
     // Reinitialize tooltips
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
         new bootstrap.Tooltip(tooltipNode)
     })
-
-    if (cities.length === 1) {
-        const forecastUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,daily,alerts&appid=${apiKey}&units=${selectedUnits}&lang=${selectedLanguage}`
-        fetchHourlyForecast(forecastUrl)
-    }
 
     // Flash effect to let user know data is refreshed
     cityColumns.classList.add("flash")
@@ -145,28 +156,97 @@ function displayWeatherData(weatherDataArray) {
     }, 500)
 }
 
+async function fetchForecast() {
+    const forecastUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=current,minutely,alerts&appid=${apiKey}&units=${selectedUnits}&lang=${selectedLanguage}`
+    try {
+        const forecastResponse = await fetch(forecastUrl)
+        const forecastData = await forecastResponse.json()
+        displayHourlyForecast(forecastData.hourly.slice(1, 26)) // Correctly access the hourly data for 24 hours
+        displayDailyforecast(forecastData.data.daily)
+    } catch (error) {
+        console.error("Error fetching hourly forecast data:", error)
+        alert(selectedLanguage === "en" ? 'Error fetching forecast data. Please try again.' : 'Ennustetietojen hakemisessa. Yritä uudelleen.')
+    }
+    console.log(lat)
+    console.log(lon)
+    console.log(city)
+    console.log(forecastUrl)
+}
 
-async function fetchHourlyForecast(forecastUrl) {
-  try {
-      const forecastResponse = await fetch(forecastUrl)
-      const forecastData = await forecastResponse.json()
-      displayHourlyForecast(forecastData.list)
-  } catch (error) {
-      console.error("Error fetching hourly forecast data:", error)
-      alert(selectedLanguage === "en" ? 'Error fetching hourly forecast data. Please try again.' : 'Virhe tuntien ennustetietojen hakemisessa. Yritä uudelleen.')
-  }
-  console.log(lat)
-  console.log(lon)
-  console.log(city)
-  console.log(forecastUrl)
-  console.log(forecastResponse)
+function displayDailyforecast(dailyData) {
+    const dailyColums = document.getElementById("daily-colums")
+    dailyColums.innerHTML = ""
+
+    const scrollableContainer = document.createElement("div")
+    scrollableContainer.style.display = "flex" // Use flexbox for layout
+    scrollableContainer.style.overflowX = "auto" // Enable horizontal scrolling
+    scrollableContainer.style.whiteSpace = "nowrap" // Prevent line breaks
+    scrollableContainer.style.textAlign = "center" // Center the items
+    scrollableContainer.style.alignItems = "flex-start" // Align items to the top
+
+    dailyData.forEach(day => {
+        const date = new Date(day.dt * 1000).toLocaleDateString()
+        const iconCode = day.weather[0].icon
+        const description = day.weather[0].description // Corrected access to description
+        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`
+        const minTemp = day.temp.min
+        const maxTemp = day.temp.max
+        const dayTemp = day.temp.day
+        const rain = day.rain || 0
+
+        const dailyItemHtml = `
+            <div class="forecast-item" style="display: inline-block; text-align: center; margin: 0 10px; min-height: 10vw">
+                <h6>${date}</h6>
+                <div data-bs-toggle="tooltip" data-bs-title="${description}">
+                    <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto;">
+                </div>
+                <div data-bs-toggle="tooltip" data-bs-title="Min: ${minTemp}${unitsLetter}, Max: ${maxTemp}${unitsLetter}">
+                    <div>${dayTemp}${unitsLetter}</div>
+                </div>
+                <p>Rain: ${rain} mm</p>
+            </div>
+        `
+        scrollableContainer.innerHTML += dailyItemHtml
+    })
+
+    dailyColums.appendChild(scrollableContainer)
+
+    // Reinitialize tooltips
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
+        if (tooltip) {
+            tooltip.dispose()
+        }
+    })
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
+        new bootstrap.Tooltip(tooltipNode)
+    })
+
+    // Flash effect to let user know data is refreshed
+    dailyColums.classList.add("flash")
+    setTimeout(() => {
+        dailyColums.classList.remove("flash")
+    }, 500)
+
+    console.log(dailyData)
+    console.log(dayTemp)
+
 }
 
 
 function displayHourlyForecast(hourlyData) {
     const hourlyColumns = document.getElementById("hourly-colums")
     hourlyColumns.innerHTML = ""
+    // Create a scrollable container
+    const scrollableContainer = document.createElement("div")
+    scrollableContainer.style.display = "flex" // Use flexbox for layout
+    scrollableContainer.style.overflowX = "auto" // Enable horizontal scrolling
+    scrollableContainer.style.whiteSpace = "nowrap" // Prevent line breaks
+    scrollableContainer.style.textAlign = "center" // Center the items
+    scrollableContainer.style.alignItems = "flex-start" // Align items to the top
 
+// Generate HTML for each hourly item
     hourlyData.forEach(item => {
         const dateTime = new Date(item.dt * 1000) // Convert Unix time to JavaScript Date
         const hour = dateTime.getHours()
@@ -174,47 +254,75 @@ function displayHourlyForecast(hourlyData) {
         const iconCode = item.weather[0].icon
         const iconUrl = `https://openweathermap.org/img/wn/${iconCode}.png`
         const description = item.weather[0].description
-        const feelsLike = item.feels_like
         const windSpeed = item.wind_speed
         const windDeg = item.wind_deg
-        const humidity = item.humidity
-        const pressure = item.pressure
         const precipitation = item.pop * 100 // Probability of precipitation as percentage
+        const windArrow = windDirectionArrow(windDeg)
 
         const hourlyItemHtml = `
-            <div class="col-auto">
-                <div class="hourly-item">
-                    <span>${hour}:00</span>
-                    <a href="#" class="d-inline-block" data-bs-toggle="tooltip" data-bs-title="${description}">
-                        <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25%; height: auto">
-                    </a>
-                    <span>${temperature}${unitsLetter}</span>
-                    <div>Feels like: ${feelsLike}${unitsLetter}</div>
-                    <div>Wind: ${windSpeed} m/s (${windDeg}°)</div>
-                    <div>Humidity: ${humidity}%</div>
-                    <div>Pressure: ${pressure} hPa</div>
-                    <div>Precipitation: ${precipitation}%</div>
+            <div class="hourly-item" style="display: inline-block; text-align: center; margin: 0 10px; min-height: 10vw">
+                <div>${hour}:00</div> 
+                <div data-bs-toggle="tooltip" data-bs-title="${description}">
+                    <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto;">
                 </div>
+                <div>${temperature}${unitsLetter}</div>
+                <div data-bs-toggle="tooltip" data-bs-title="Precipitation">
+                    <div>${precipitation}%</div>
+                </div>
+                <div data-bs-toggle="tooltip" data-bs-title="Wind">
+                    <div style="font-family: Arial, sans-serif;">${windSpeed} m/s ${windArrow}</div>
+                </div>      
             </div>
         `
 
-        hourlyColumns.innerHTML += hourlyItemHtml
+        if (hour === 23) {
+            const nextDayDiv = `
+            <div class="" style="display: inline-block; text-align: left; margin: 0 10px; height: auto;">
+                <div style="border: 1px solid #ccc; height: 100%; display: flex; flex-direction: column; padding: 5px;">
+                    <h4>NEXT</h4>
+                    <h4>DAY →</h4>
+                </div>
+            </div>
+            `
+            scrollableContainer.innerHTML += nextDayDiv
+        }
+        scrollableContainer.innerHTML += hourlyItemHtml
+        
+    })
+
+hourlyColumns.appendChild(scrollableContainer)
+
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        tooltips.forEach(tooltipNode => {
+            const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
+            if (tooltip) {
+                tooltip.dispose()
+            }
     })
 
     // Reinitialize tooltips
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-        new bootstrap.Tooltip(tooltipNode)
-    })
+        new bootstrap.Tooltip(tooltipNode);
+    });
 
     // Flash effect to let user know data is refreshed
-    hourlyColumns.classList.add("flash")
+    hourlyColumns.classList.add("flash");
     setTimeout(() => {
-        hourlyColumns.classList.remove("flash")
-    }, 500)
+        hourlyColumns.classList.remove("flash");
+    }, 500);
 }
 
+function windDirectionArrow(degree) {
+    if (degree >= 337.5 || degree < 22.5) return '↑'
+    if (degree >= 22.5 && degree < 67.5) return '↗'
+    if (degree >= 67.5 && degree < 112.5) return '→'
+    if (degree >= 112.5 && degree < 157.5) return '↘'
+    if (degree >= 157.5 && degree < 202.5) return '↓'
+    if (degree >= 202.5 && degree < 247.5) return '↙'
+    if (degree >= 247.5 && degree < 292.5) return '←'
+    if (degree >= 292.5 && degree < 337.5) return '↖'
+}
 
-const locationButton = document.getElementById("get-location-btn")
 locationButton.addEventListener("click", async (event) => {
   event.preventDefault()
     if (navigator.geolocation) {
@@ -227,9 +335,9 @@ locationButton.addEventListener("click", async (event) => {
 
                 console.log(`Latitude: ${pos.lat}, Longitude: ${pos.lon}`)
                 await getCityName(pos.lat, pos.lon)
-                cities = [city] // Get city name
+                cities = [city]
                 console.log(cities)
-                document.getElementById("search-button").value = cities[0] // Set city value in input
+                document.getElementById("search-button").value = cities[0]
                 
                 if (city === lastSearchedCity) {
                     document.querySelector('button[type="submit"]').innerText = "Refresh"
@@ -238,7 +346,7 @@ locationButton.addEventListener("click", async (event) => {
                     lastSearchedCity = city
                 }
                 console.log(cities)
-                await getWeather(cities) // Call getWeather with the city name
+                await getWeather(cities)
             },
             () => {console.error("Error: The Geolocation service failed.")}
         )
