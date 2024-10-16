@@ -7,6 +7,18 @@ let city
 let cities = []
 let lat  = ""
 let lon = ""
+const tomorrow = new Date()
+tomorrow.setDate(tomorrow.getDate() + 1)
+
+const tomorrowDay = tomorrow.toLocaleDateString(
+    selectedLanguage === "fi" ? 'fi-FI' : 'en-GB',
+    { day: 'numeric' }
+)
+
+const tomorrowMonth = tomorrow.toLocaleDateString(
+    selectedLanguage === "fi" ? 'fi-FI' : 'en-GB',
+    { month: 'short' }
+)
 
 document.addEventListener("DOMContentLoaded", async function () {
     console.log(city)
@@ -256,9 +268,11 @@ function displayHourlyForecast(hourlyData) {
 
 		if (hour === 0) {
 			const todayDiv = `
-				<div class="${today}" style="display: flex; justify-content: left; align-items: center; margin: 0 10px; height: auto;">
+				<div class="today" style="display: flex; justify-content: left; align-items: center; margin: 0 10px; height: auto;">
 					<div style="border: 1px solid #ccc; border-radius: 10px; height: 100%; display: flex; flex-direction: column; padding: 5px; justify-content: center; align-items: flex-start;">
-						<h4>${today} →</h4>
+						<h4>${tomorrowDay}</h4>
+                        <h4>${tomorrowMonth} →</h4>
+
 					</div>
 				</div>
 			`

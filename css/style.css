@@ -1,4 +1,45 @@
+@keyframes flash {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
 
+.flash {
+    animation: flash 0.5s ease-in-out;
+}
+body {
+transition: background-color 0.5s;
+}
+
+.hot {
+background: linear-gradient(to bottom, #FFD700, #ff7700);
+}
+
+.hot.night {
+    background: linear-gradient(to bottom, #b78900, #720101);
+}
+
+.mild {
+    background: linear-gradient(to bottom, #467182, #364b6a);
+}
+
+.mild.night {
+    background: linear-gradient(to bottom, #3b4a55, #193b53);
+}
+
+.cold {
+    background: linear-gradient(to bottom, #c2f0ff, #27d0ff);
+}
+
+.cold.night {
+    background: linear-gradient(to bottom, #224752, #024870);
+}
 
 div.fmi-metoclient-timeslider {
   position: absolute;
