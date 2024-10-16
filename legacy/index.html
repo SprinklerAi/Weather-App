@@ -24,10 +24,10 @@
 <body>
   <style>
     #map {
-      max-width: 30%;
+      width: 100%;
       aspect-ratio: 3/4;
       position: relative;
-      margin: 30px;
+      margin: 10px;
     }
     @keyframes flash {
         0% {
@@ -88,12 +88,14 @@
     
 <div class="whole-weather-info" id="whole-weather-info" style="align-items: center; justify-content: center;">
   <div class="row align-items-center justify-content-center" id="city-colums" style="gap: 10px; max-width: 100%;"></div>
-    <div id="hourly-forecast" style="margin: 20px;">
-        <div class="row align-items-center justify-content-center" id="hourly-colums"></div>
-    </div>
-    <div id="daily-forecast">
+
+  <div id="hourly-forecast" style="margin: 20px;">
+      <div class="row align-items-center justify-content-center" id="hourly-colums"></div>
+  </div>
+
+  <div id="daily-forecast">
       <div class="row align-items-center justify-content-center" id="daily-colums"></div>
-    </div>
+  </div>
 </div>
 
 

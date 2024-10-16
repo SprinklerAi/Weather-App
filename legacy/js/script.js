@@ -105,10 +105,10 @@ async function getWeather(cities) {
         }
     }
 
-    displayWeatherData(weatherDataArray)
+    displayCurrentMainCity(weatherDataArray)
 }
 
-function displayWeatherData(weatherDataArray) {
+function displayCurrentMainCity(weatherDataArray) {
     const cityColumns = document.getElementById("city-colums")
     cityColumns.innerHTML = "" // Clear previous data
 
@@ -122,7 +122,7 @@ function displayWeatherData(weatherDataArray) {
         const weatherHtml = `
             <div class="col d-flex justify-content-center align-items-center" style="text-align: center;">
                 <div class="weather-card" style="max-width: 25vw;">
-                    <h5 style="margin: 5px 0;">${cityName}</h5>
+                    <h5 style="margin: 10px 0;">${cityName}</h5>
                     <div data-bs-toggle="tooltip" data-bs-title="${description}">
                         <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto; margin: -50px;">
                     </div>
@@ -162,7 +162,7 @@ async function fetchForecast() {
         const forecastResponse = await fetch(forecastUrl)
         const forecastData = await forecastResponse.json()
         displayHourlyForecast(forecastData.hourly.slice(1, 26)) // Correctly access the hourly data for 24 hours
-        displayDailyforecast(forecastData.data.daily)
+        displayDailyforecast(forecastData.daily) // Correct path to access daily data
     } catch (error) {
         console.error("Error fetching hourly forecast data:", error)
         alert(selectedLanguage === "en" ? 'Error fetching forecast data. Please try again.' : 'Ennustetietojen hakemisessa. Yritä uudelleen.')
@@ -172,68 +172,6 @@ async function fetchForecast() {
     console.log(city)
     console.log(forecastUrl)
 }
-
-function displayDailyforecast(dailyData) {
-    const dailyColums = document.getElementById("daily-colums")
-    dailyColums.innerHTML = ""
-
-    const scrollableContainer = document.createElement("div")
-    scrollableContainer.style.display = "flex" // Use flexbox for layout
-    scrollableContainer.style.overflowX = "auto" // Enable horizontal scrolling
-    scrollableContainer.style.whiteSpace = "nowrap" // Prevent line breaks
-    scrollableContainer.style.textAlign = "center" // Center the items
-    scrollableContainer.style.alignItems = "flex-start" // Align items to the top
-
-    dailyData.forEach(day => {
-        const date = new Date(day.dt * 1000).toLocaleDateString()
-        const iconCode = day.weather[0].icon
-        const description = day.weather[0].description // Corrected access to description
-        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`
-        const minTemp = day.temp.min
-        const maxTemp = day.temp.max
-        const dayTemp = day.temp.day
-        const rain = day.rain || 0
-
-        const dailyItemHtml = `
-            <div class="forecast-item" style="display: inline-block; text-align: center; margin: 0 10px; min-height: 10vw">
-                <h6>${date}</h6>
-                <div data-bs-toggle="tooltip" data-bs-title="${description}">
-                    <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto;">
-                </div>
-                <div data-bs-toggle="tooltip" data-bs-title="Min: ${minTemp}${unitsLetter}, Max: ${maxTemp}${unitsLetter}">
-                    <div>${dayTemp}${unitsLetter}</div>
-                </div>
-                <p>Rain: ${rain} mm</p>
-            </div>
-        `
-        scrollableContainer.innerHTML += dailyItemHtml
-    })
-
-    dailyColums.appendChild(scrollableContainer)
-
-    // Reinitialize tooltips
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-        const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
-        if (tooltip) {
-            tooltip.dispose()
-        }
-    })
-
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-        new bootstrap.Tooltip(tooltipNode)
-    })
-
-    // Flash effect to let user know data is refreshed
-    dailyColums.classList.add("flash")
-    setTimeout(() => {
-        dailyColums.classList.remove("flash")
-    }, 500)
-
-    console.log(dailyData)
-    console.log(dayTemp)
-
-}
-
 
 function displayHourlyForecast(hourlyData) {
     const hourlyColumns = document.getElementById("hourly-colums")
@@ -260,10 +198,10 @@ function displayHourlyForecast(hourlyData) {
         const windArrow = windDirectionArrow(windDeg)
 
         const hourlyItemHtml = `
-            <div class="hourly-item" style="display: inline-block; text-align: center; margin: 0 10px; min-height: 10vw">
+            <div class="hourly-item" style="flex-grow: 1; display: inline-block; text-align: center; margin: 0 10px; min-height: 10vw">
                 <div>${hour}:00</div> 
                 <div data-bs-toggle="tooltip" data-bs-title="${description}">
-                    <img src="${iconUrl}" alt="Weather Icon" style="max-width: 25vw; height: auto;">
+                    <img src="${iconUrl}" alt="Weather Icon" style="max-width: 20vw; height: auto;">
                 </div>
                 <div>${temperature}${unitsLetter}</div>
                 <div data-bs-toggle="tooltip" data-bs-title="Precipitation">
@@ -275,7 +213,7 @@ function displayHourlyForecast(hourlyData) {
             </div>
         `
 
-        if (hour === 23) {
+        if (hour === 0) {
             const nextDayDiv = `
             <div class="" style="display: inline-block; text-align: left; margin: 0 10px; height: auto;">
                 <div style="border: 1px solid #ccc; height: 100%; display: flex; flex-direction: column; padding: 5px;">
@@ -310,6 +248,69 @@ hourlyColumns.appendChild(scrollableContainer)
     setTimeout(() => {
         hourlyColumns.classList.remove("flash");
     }, 500);
+}
+
+function displayDailyforecast(dailyData) {
+    const dailyColums = document.getElementById("daily-colums")
+    dailyColums.innerHTML = ""
+
+    const scrollableContainer = document.createElement("div")
+    scrollableContainer.style.display = "flex" // Use flexbox for layout
+    scrollableContainer.style.overflowX = "auto" // Enable horizontal scrolling
+    scrollableContainer.style.whiteSpace = "nowrap" // Prevent line breaks
+    scrollableContainer.style.textAlign = "center" // Center the items
+    scrollableContainer.style.alignItems = "flex-start" // Align items to the top
+
+    // Exclude the first day by using slice(1)
+    dailyData.slice(1).forEach(day => {
+        const date = new Date(day.dt * 1000).toLocaleDateString(
+            selectedLanguage === "fi" ? 'fi-FI' : 'en-GB', 
+            { day: 'numeric', month: 'short' }
+        ) // Use Finnish or UK date format
+        const iconCode = day.weather[0].icon
+        const description = day.weather[0].description
+        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`
+        const minTemp = day.temp.min
+        const maxTemp = day.temp.max
+        const dayTemp = day.temp.day
+        const rain = day.rain || 0
+
+        const dailyItemHtml = `
+            <div class="forecast-item" style="flex-grow: 1; display: inline-block; text-align: center; margin-left: 5px, margin-right-5px; min-height: 10vw">
+                <h6>${date}</h6>
+                <div data-bs-toggle="tooltip" data-bs-title="${description}">
+                    <img src="${iconUrl}" alt="Weather Icon" style="max-width: 10vw; height: auto;">
+                </div>
+                <div data-bs-toggle="tooltip" data-bs-title="Min: ${minTemp}${unitsLetter}, Max: ${maxTemp}${unitsLetter}">
+                    <div>${dayTemp}${unitsLetter}</div>
+                </div>
+                <p>${rain} mm</p>
+            </div>
+        `
+        scrollableContainer.innerHTML += dailyItemHtml
+    })
+
+    dailyColums.appendChild(scrollableContainer)
+
+    // Reinitialize tooltips
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
+        if (tooltip) {
+            tooltip.dispose()
+        }
+    })
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
+        new bootstrap.Tooltip(tooltipNode)
+    })
+
+    // Flash effect to let user know data is refreshed
+    dailyColums.classList.add("flash")
+    setTimeout(() => {
+        dailyColums.classList.remove("flash")
+    }, 500)
+
+    console.log(dailyData)
 }
 
 function windDirectionArrow(degree) {
