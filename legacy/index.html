@@ -21,11 +21,11 @@
   <!-- End of libraries for optional IE 11 support -->
   <title>Rain Map</title>
 </head>
-<body>
+<body style="overflow-x: hidden;">
   <style>
     #map {
-      width: 100%;
-      aspect-ratio: 3/4;
+      width: 90%;
+      aspect-ratio: 4/3;
       position: relative;
       margin: 10px;
     }
@@ -44,53 +44,75 @@
     .flash {
         animation: flash 0.5s ease-in-out;
     }
+    body {
+    transition: background-color 0.5s;
+    }
+
+    .hot {
+    background: linear-gradient(to bottom, #FFD700, #ff7700);
+    }
+
+    .hot.night {
+        background: linear-gradient(to bottom, #b78900, #720101);
+    }
+
+    .mild {
+        background: linear-gradient(to bottom, #467182, #364b6a);
+    }
+
+    .mild.night {
+        background: linear-gradient(to bottom, #3b4a55, #193b53);
+    }
+
+    .cold {
+        background: linear-gradient(to bottom, #c2f0ff, #27d0ff);
+    }
+
+    .cold.night {
+        background: linear-gradient(to bottom, #224752, #024870);
+    }
   </style>
       
 
-<nav class="navbar navbar-expand-md bg-body-tertiary" style="margin: 20px; align-items: center; justify-content: center;">
+<nav class="navbar navbar-expand-sm bg-body-tertiary">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#"><h2>Weather App</h2></a>
+    <a class="navbar-brand" href="#" onclick="fetchDefaultWeather()"><h2>Weather App</h2></a>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent" style="background-color: rgb(185, 185, 185); padding: 20px; border-radius: 30px; z-index: 1000; width: auto;">
-      <ul class="navbar-nav mb-2 mb-lg-0 ms-auto d-flex align-items-right" style="width: auto;">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
-        </li>
-        <li class="nav-item">
-          <select id="language-selector" onchange="changeLanguage(this.value)" class="form-select" style="margin: 5px; align-items: center; justify-content: center; width: auto;">
-            <option value="en">Eng</option>
-            <option value="fi">Fin</option>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+
+      <form class="d-flex flex-row align-items-center" role="search" id="search-form" style="margin: 5px;">
+        <div class="d-flex align-items-center me-2">
+          <select id="language-selector" onchange="changeLanguage(this.value)" class="form-select me-2 w-auto">
+            <option value="en">ENG</option>
+            <option value="fi">FI</option>
           </select>
-        </li>
-        <li class="nav-item">
-          <select id="unit-selector" onchange="changeUnits(this.value)" class="form-select" style="margin: 5px; align-items: center; justify-content: center; width: auto;">
+          <select id="unit-selector" onchange="changeUnits(this.value)" class="form-select w-auto">
             <option value="metric">C°</option>
             <option value="imperial">F°</option>
             <option value="standard">K</option>
           </select>
-        </li>
-      </ul>
-      <form class="d-flex align-items-center ms-2" role="search" id="search-form" style="flex-shrink: 0; margin-right: 10px; margin-left: 0px;">
-        <input type="text" id="search-button" placeholder="Enter city" class="form-control" required style="max-width: 150px; margin-left: 15px">
-        <button type="submit" class="btn btn-outline-success ms-2">Search</button>
-    </form>
-      <button type="submit" class="btn btn-outline-success ms-1" id="get-location-btn" data-bs-toggle="tooltip" data-bs-title="Your location">
-        <i class="bi bi-geo-alt-fill"></i>
-      </button>
-    </form>
+        </div>
+
+        <input type="text" id="search-button" placeholder="Enter city" class="form-control" required>
+        <button type="submit" class="btn btn-outline-success ms-2"><i class="bi bi-search"></i></button>
+        <button type="submit" class="btn btn-outline-success ms-1" id="get-location-btn" data-bs-toggle="tooltip" data-bs-title="Your location">
+          <i class="bi bi-geo-alt-fill"></i>
+        </button>
+      </form>
+
     </div>
   </div>
 </nav>
 
-      
     
 <div class="whole-weather-info" id="whole-weather-info" style="align-items: center; justify-content: center;">
-  <div class="row align-items-center justify-content-center" id="city-colums" style="gap: 10px; max-width: 100%;"></div>
+  <div class="row align-items-center justify-content-center" id="city-colums" style="margin: 10px; gap: 10px; max-width: 100%;"></div>
 
   <div id="hourly-forecast" style="margin: 20px;">
-      <div class="row align-items-center justify-content-center" id="hourly-colums"></div>
+      <div class="row align-items-center justify-content-center" id="hourly-colums" style="margin-bottom: 20px;"></div>
   </div>
 
   <div id="daily-forecast">
