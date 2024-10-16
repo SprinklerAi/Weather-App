@@ -70,24 +70,22 @@
           </select>
         </li>
       </ul>
-      <form class="d-flex align-items-center ms-2" role="search" onsubmit="return getWeather(event);" style="flex-shrink: 0;">
-        <input type="text" id="city" placeholder="Enter city" class="form-control" required style="max-width: 150px;">
+      <form class="d-flex align-items-center ms-2" role="search" id="search-form" style="flex-shrink: 0;">
+        <input type="text" id="search-button" placeholder="Enter city" class="form-control" required style="max-width: 150px;">
         <button type="submit" class="btn btn-outline-success ms-2">Search</button>
+    </form>
+    
       </form>
-      <button type="submit" class="btn btn-outline-success ms-1"  id="get-location-btn">Get Location</button>
-
+        <button type="submit" class="btn btn-outline-success ms-1"  id="get-location-btn">Get Location</button>
     </div>
   </div>
 </nav>
 
       
     
-<div class="whole-weather-info" style="align-items: center;">
-  <div class="container text-center">
-    <img id="weather-icon" style="display: none;" alt="Weather Icon">
-    <div id="temp-div"></div>
-    <div id="weather-info"></div>
-  </div>
+<div class="whole-weather-info" id="whole-weather-info" style="align-items: center; justify-content: center;">
+
+  <div class="row align-items-center justify-content-center" id="city-colums" style="gap: 10px; max-width: 100%;"></div>
 
   <div class="container text-center">
     <div id="hourly-forecast">
@@ -97,12 +95,8 @@
     </div>
   </div>
 
-  <div class="container text-center">
-    <div class="row justify-content-center" id="default-weather"></div>
-    <img id="weather-icon" style="display: none;" alt="Weather Icon">
-    <div id="temp-div"></div>
-    <div id="weather-info"></div>
-  </div>
+ 
+
 </div>
 
 
