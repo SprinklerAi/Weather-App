@@ -22,20 +22,10 @@
   <title>Rain Map</title>
 </head>
 <body style="overflow-x: hidden;">
-  <style>
-    #map {
-      width: 90%;
-      aspect-ratio: 4/3;
-      position: relative;
-      margin: 10px;
-    }
-
-  </style>
-      
 
 <nav class="navbar navbar-expand-sm bg-body-tertiary">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#" onclick="fetchDefaultWeather()"><h2>Weather App</h2></a>
+    <a class="navbar-brand" href="#" onclick="fetchDefaultCitiesWeather()"><h2>Weather App</h2></a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -54,15 +44,6 @@
             <option value="standard">K</option>
           </select>
         </div>
-        <div class="dropdown me-2">
-          <button class="btn btn-outline-primary dropdown-toggle" type="button" id="favoritesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            Favorites
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="favoritesDropdown" id="favorites-list">
-            
-          </ul>
-        </div>
-
         <input type="text" id="search-button" placeholder="Enter city" class="form-control" required>
         <button type="submit" class="btn btn-outline-success ms-2"><i class="bi bi-search"></i></button>
         <button type="submit" class="btn btn-outline-success ms-1" id="get-location-btn" data-bs-toggle="tooltip" data-bs-title="Your location">
@@ -83,13 +64,13 @@
   </div>
 
   <div id="daily-forecast">
-      <div class="row align-items-center justify-content-center" id="daily-colums"></div>
+      <div class="row align-items-center justify-content-center margin: 10px;" id="daily-colums"></div>
   </div>
 </div>
 
+<h3 style="margin: 10px;">Rain map↓</h3>
 
-    
-<div id="map"></div>
+<div id="map" style="justify-content: center; align-items: center;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script type="text/javascript">
@@ -98,5 +79,6 @@
     map.addControl(new ol.control.ScaleLine());
   })
 </script>
+
 </body>
 </html>

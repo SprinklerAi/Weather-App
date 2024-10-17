@@ -1,4 +1,6 @@
 const apiKey = "dd684262242773646e93f248d2ffff5b"
+const maxFavourites = 5
+let favouriteCities = []
 let selectedLanguage = "en"
 let selectedUnits = "metric"
 let unitsLetter = "C°"
@@ -9,6 +11,8 @@ let lat  = ""
 let lon = ""
 const tomorrow = new Date()
 tomorrow.setDate(tomorrow.getDate() + 1)
+
+const scrollPosition = window.scrollY || document.documentElement.scrollTop
 
 const tomorrowDay = tomorrow.toLocaleDateString(
     selectedLanguage === "fi" ? 'fi-FI' : 'en-GB',
@@ -29,30 +33,47 @@ document.addEventListener("DOMContentLoaded", async function () {
 })
 
 document.getElementById("search-form").addEventListener("submit", async(event) => {
-    event.preventDefault()
-    city = document.getElementById("search-button").value.trim()
+    event.preventDefault();
+    city = document.getElementById("search-button").value.trim();
     if (city) {
-        cities = [city]
-        getWeather(cities)
+         // Add city to favorites
+        const cities = [city]; // Create array with the searched city
+        await getWeather(cities); // Call your getWeather function
     }
-})
+});
 
-// These 2 will refresh the info to accomodate setting changes______________________
+// These 2 will disposes and reinitializes tooltips, otherwise they get stuck when settings are changed._____
+
+function disposeTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
+        if (tooltip) {
+            tooltip.dispose()
+        }
+    })
+}
+
+function initializeTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
+        new bootstrap.Tooltip(tooltipNode)
+    })
+}
+//_____________________________________________________________________________________________________________
+
+// These 2 will refresh the info to accomodate setting changes______________________________
 async function changeLanguage(lang) {
     selectedLanguage = lang
     await fetchWeatherData()
 
     const locationButton = document.getElementById('get-location-btn')
     const tooltipTitle = selectedLanguage === "en" ? "Your location" : "Sinun sijaintisi"
+	const searchInput = document.getElementById('search-button')
+	searchInput.placeholder = selectedLanguage === "en" ? "Enter city" : "Etsi kaupunki"
 
     locationButton.setAttribute('data-bs-title', tooltipTitle)
 
-    const tooltip = bootstrap.Tooltip.getInstance(locationButton)
-    if (tooltip) {
-        tooltip.dispose()
-    }
-
-    new bootstrap.Tooltip(locationButton)
+	disposeTooltips()
+	initializeTooltips()
 }
 
 async function changeUnits(units) {
@@ -64,16 +85,17 @@ async function changeUnits(units) {
 		case "standard":
 			unitsLetter = "K"
 			break
-		default:
+		case "metric":
 			unitsLetter = "C°"
-	}     
-
+	}    
 	await fetchWeatherData()
-	document.querySelectorAll("[data-bs-toggle='tooltip']").forEach(tooltipNode => {
-		new bootstrap.Tooltip(tooltipNode)
-	})
+
+	disposeTooltips()
+	initializeTooltips()
 }
-//___________________________________________________________________________________
+//________________________________________________________________________________________
+
+
 
 async function fetchWeatherData() {
 	// Fetch default weather only if no city is searched. In case settings are changed on default page
@@ -85,13 +107,16 @@ async function fetchWeatherData() {
 	}
 }
 
+
+
 async function fetchDefaultCitiesWeather() {
-	cities = ["Helsinki", "Lappeenranta", "Jyväskylä", "Rovaniemi", "Paris", "Berlin"] // 6 best cities of EU for default page
 	const hourlyColums = document.getElementById("hourly-colums")
 	const dailyColums = document.getElementById("daily-colums")
 	hourlyColums.innerHTML = ""
 	dailyColums.innerHTML = ""
+	cities = ["Helsinki", "Lappeenranta", "Jyväskylä", "Rovaniemi", "Paris", "Berlin"] // 6 best cities of EU for default page
 	await getWeather(cities)
+	
 }
 
 async function getWeather(cities) {
@@ -133,13 +158,15 @@ async function getWeather(cities) {
 }
 
 function displayCurrentMainCity(weatherDataArray) {
+	disposeTooltips()
+	initializeTooltips()
 	const cityColumns = document.getElementById("city-colums")
 	cityColumns.innerHTML = ""
-	let currentTemp = 0
+	let currenttempForGradient = 0
 
 	weatherDataArray.forEach(data => {
 		const cityName = data.name
-		currentTemp = Math.round(data.main.temp)
+		const currentTemp = Math.round(data.main.temp)
 		const description = data.weather[0].description
 		const iconCode = data.weather[0].icon
 		const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@4x.png`
@@ -162,38 +189,32 @@ function displayCurrentMainCity(weatherDataArray) {
 	const currentTime = new Date().getHours()
 	let gradientColor = ""
 
-	// Change currenttemp based on units to equalise conversion differences
-	if (unitsLetter === "F°") {
-		currentTemp = (currentTemp - 32) * (5 / 9)
-	} else if (unitsLetter === "K") {
-		currentTemp = currentTemp - 273.15
-	}
+	if (cities.length == 1) { //Change color based on temp only if one city is looked up. Otherwise default color is hot (yellow)
 
-	if (currentTemp > 20) {
-		gradientColor = "hot"
-	} else if (currentTemp >= 15) {
-		gradientColor = "mild"
-	} else {
-		gradientColor = "cold"
-	}
-	if (currentTime >= 20) {
-		gradientColor += " night"
-	}
-
-	document.body.className = gradientColor
-
-	const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-	tooltips.forEach(tooltipNode => {
-		const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
-		if (tooltip) {
-			tooltip.dispose()
+		// Change currenttempForGradient based on units to equalise conversion differences
+		if (unitsLetter === "F°") {
+			currenttempForGradient = (currentTemp - 32) * (5 / 9)
+		} else if (unitsLetter === "K") {
+			currenttempForGradient = currentTemp - 273.15
 		}
-	})
 
-	// Reinitialize tooltips
-	document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-		new bootstrap.Tooltip(tooltipNode)
-	})
+		if (currenttempForGradient > 20) {
+			gradientColor = "hot"
+		} else if (currenttempForGradient >= 15) {
+			gradientColor = "mild"
+		} else {
+			gradientColor = "cold"
+		}
+		if (currentTime >= 20) {
+			gradientColor += " night"
+		}
+		document.body.className = gradientColor
+	} else {document.body.className = "hot"} 
+
+	
+
+	disposeTooltips()
+	initializeTooltips()
 
 	// Flash effect to let user know data is refreshed
 	cityColumns.classList.add("flash")
@@ -283,18 +304,8 @@ function displayHourlyForecast(hourlyData) {
 
 	hourlyColumns.appendChild(scrollableContainer)
 
-	const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-	tooltips.forEach(tooltipNode => {
-		const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
-		if (tooltip) {
-			tooltip.dispose()
-		}
-	})
-
-	// Reinitialize tooltips
-	document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-		new bootstrap.Tooltip(tooltipNode)
-	})
+	disposeTooltips()
+	initializeTooltips()
 
 	// Flash effect to let user know data is refreshed
 	hourlyColumns.classList.add("flash")
@@ -307,12 +318,12 @@ function displayDailyforecast(dailyData) {
     const dailyColums = document.getElementById("daily-colums")
     dailyColums.innerHTML = ""
 
-    const scrollableContainer = document.createElement("div")
-    scrollableContainer.style.display = "flex" // Use flexbox for layout
-    scrollableContainer.style.overflowX = "auto" // Enable horizontal scrolling
-    scrollableContainer.style.whiteSpace = "nowrap" // Prevent line breaks
-    scrollableContainer.style.textAlign = "center" // Center the items
-    scrollableContainer.style.alignItems = "flex-start" // Align items to the top
+    const nonScrollableContainer = document.createElement("div")
+    nonScrollableContainer.style.display = "flex" // Use flexbox for layout
+    nonScrollableContainer.style.overflowX = "auto" // Enable horizontal scrolling
+    nonScrollableContainer.style.whiteSpace = "nowrap" // Prevent line breaks
+    nonScrollableContainer.style.textAlign = "center" // Center the items
+    nonScrollableContainer.style.alignItems = "flex-start" // Align items to the top
 
     // Exclude the first day since we show it on main infocard above these
     dailyData.slice(1).forEach(day => {
@@ -340,22 +351,13 @@ function displayDailyforecast(dailyData) {
                 <p>${rain} mm</p>
             </div>
         `
-        scrollableContainer.innerHTML += dailyItemHtml
+        nonScrollableContainer.innerHTML += dailyItemHtml
     })
 
-    dailyColums.appendChild(scrollableContainer)
+    dailyColums.appendChild(nonScrollableContainer)
 
-    // Reinitialize tooltips
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-        const tooltip = bootstrap.Tooltip.getInstance(tooltipNode)
-        if (tooltip) {
-            tooltip.dispose()
-        }
-    })
-
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipNode => {
-        new bootstrap.Tooltip(tooltipNode)
-    })
+	disposeTooltips()
+	initializeTooltips()
 
     // Flash effect to let user know data is refreshed
     dailyColums.classList.add("flash")
